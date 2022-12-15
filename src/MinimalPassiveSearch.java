@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-
 public class MinimalPassiveSearch {
 
 
@@ -12,30 +10,24 @@ public class MinimalPassiveSearch {
             System.out.println(x_start + ", " + x_stop);
         }
         else {
-            ArrayList<Double> x_i = new ArrayList<>();
-            ArrayList<Double> f_i = new ArrayList<>();
 
             double length = Math.abs(x_stop - x_start);
             double step = length / (grid_nodes_count + 1);
 
-            for (int i = 0; i < grid_nodes_count + 2; i++) x_i.add(x_start + step * i);
-            x_i.forEach(x -> f_i.add(f(x)));
+            double[] x_i = new double[grid_nodes_count + 2];
+            double[] f_i = new double[grid_nodes_count + 2];
 
-            double x_min = x_i.get(0);
-            double f_min = f(x_min);
-            double f_x;
-
-            for (double x : x_i) {
-                f_x = f(x);
-                if (f_x < f_min) {
-                   // System.out.printf("Old: {x=%.4f f(x)=%.4f}. New: {x=%.4f f(x)=%.4f}.\n", x_min, f_min, x, f_x);
-                    x_min = x;
-                    f_min = f_x;
-                }
+            for (int i = 0; i < grid_nodes_count + 2; i++) {
+                x_i[i] = x_start + step * i;
+                f_i[i] = f(x_i[i]);
             }
 
-            System.out.printf("\nMin x = %.4f. Min f(x) = %.4f.\n", x_min, f_min);
-            System.out.println(x_i + "\n" + f_i);
+            int minIndex = getMinIndex(f_i, false);
+
+            double x_min = x_i[minIndex];
+            double f_min = f_i[minIndex];
+
+            printResult(x_i, f_i, x_min, f_min);
 
         }
 
@@ -60,16 +52,10 @@ public class MinimalPassiveSearch {
         }
         for (int i = 0; i < f_i.length; i++) f_i[i] = f(x_i[i]);
 
-        double x_min = x_i[0];
-        double f_min = f_i[0];
+        int minIndex = getMinIndex(f_i, true);
 
-        for (int i = 0; i < x_i.length; i++) {
-            if (f_i[i] < f_min) {
-               // System.out.printf("Old: {x=%.4f f(x)=%.4f}. New: {x=%.4f f(x)=%.4f}.\n", x_min, f_min, x_i[i], f_i[i]);
-                x_min = x_i[i];
-                f_min = f_i[i];
-            }
-        }
+        double x_min = x_i[minIndex];
+        double f_min = f_i[minIndex];
 
         printResult(x_i, f_i, x_min, f_min);
     }
@@ -79,31 +65,23 @@ public class MinimalPassiveSearch {
             System.out.println(x_start + ", " + x_stop);
         }
         else {
-            ArrayList<Double> x_i = new ArrayList<>();
-            ArrayList<Double> f_i = new ArrayList<>();
-
             double length = Math.abs(x_stop - x_start);
             double step = length / (grid_nodes_count + 1);
 
-            for (int i = 0; i < grid_nodes_count + 2; i++) x_i.add(x_start + step * i);
-            x_i.forEach(x -> f_i.add(f(x)));
+            double[] x_i = new double[grid_nodes_count + 2];
+            double[] f_i = new double[grid_nodes_count + 2];
 
-            double x_min = x_i.get(0);
-            double f_min = f(x_min);
-            double f_x;
-
-            for (double x : x_i) {
-                f_x = f(x);
-                if (f_x < f_min) {
-                   // System.out.printf("Old: {x=%.4f f(x)=%.4f}. New: {x=%.4f f(x)=%.4f}.\n", x_min, f_min, x, f_x);
-                    x_min = x;
-                    f_min = f_x;
-                }
-                else if (f_x > f_min) break;
+            for (int i = 0; i < grid_nodes_count + 2; i++) {
+                x_i[i] = x_start + step * i;
+                f_i[i] = f(x_i[i]);
             }
 
-            System.out.printf("\nMin x = %.4f. Min f(x) = %.4f.\n", x_min, f_min);
-            System.out.println(x_i + "\n" + f_i);
+            int minIndex = getMinIndex(f_i, true);
+
+            double x_min = x_i[minIndex];
+            double f_min = f_i[minIndex];
+
+            printResult(x_i, f_i, x_min, f_min);
 
         }
 
@@ -120,17 +98,10 @@ public class MinimalPassiveSearch {
         for (int i = 0; i < x_i.length; i++) x_i[i] = x_start + step*i;
         for (int i = 0; i < f_i.length; i++) f_i[i] = f(x_i[i]);
 
-        double x_min = x_i[0];
-        double f_min = f_i[0];
+        int minIndex = getMinIndex(f_i, true);
 
-        for (int i = 0; i < x_i.length; i++) {
-            if (f_i[i] < f_min) {
-                x_min = x_i[i];
-                f_min = f_i[i];
-            }
-            else if (f_i[i] > f_min) break;
-        }
-
+        double x_min = x_i[minIndex];
+        double f_min = f_i[minIndex];
 
         printResult(x_i, f_i, x_min, f_min);
 
@@ -144,4 +115,30 @@ public class MinimalPassiveSearch {
         for (double v : f_i) System.out.printf("%.3f ", v);
         System.out.print("]\n");
     }
+
+    private int getMinIndex(double[] f_i, boolean withBreak) {
+        int j = 0;
+        double f_min = f_i[0];
+
+        if (withBreak) {
+            for (int i = 0; i < f_i.length; i++) {
+                if (f_i[i] < f_min) {
+                    f_min = f_i[i];
+                    j = i;
+                }
+                else if (f_i[i] > f_min) return j;
+            }
+        }
+        else {
+            for (int i = 0; i < f_i.length; i++) {
+                if (f_i[i] < f_min) {
+                    f_min = f_i[i];
+                    j = i;
+                }
+            }
+        }
+        return j;
+    }
+
+
 }
